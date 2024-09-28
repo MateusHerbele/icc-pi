@@ -26,16 +26,15 @@ double somatorio(double* pi, double tolerance, unsigned int* n, double* aproxima
     double last_value = 0;
 // inicial erro absoluto
     printf("ABS INICIAL: %.15e\n", *aproximate_absolut_error);
-
-    while( tolerance >= *aproximate_absolut_error){
-        *pi += (exponentiation(2, *n, flops) * exponentiation(factorial(*n, flops), 2, flops)) / factorial(2* *n + 1, flops);
-        *n += 1;
-        if(*n > 2){
+    do{
+        *pi += 2.0 * ((exponentiation(2, *n, flops) * exponentiation(factorial(*n, flops), 2, flops)) / factorial(2* *n + 1, flops));
+        *flops += 5;
         *aproximate_absolut_error = fabs(*pi - last_value);
-        }
+        *n += 1;
         last_value = *pi;
-        printf("ABS: %.15e\n", *aproximate_absolut_error);
-    }
+        printf("Iteração: %d, PI: %.15e, ABS: %.15e\n", *n, *pi, *aproximate_absolut_error);
+    }while(*aproximate_absolut_error >= tolerance);
+    
 }
 
 void pi_calc(double* pi, double tolerance, unsigned int* n, double* aproximate_absolut_error, unsigned int* ulps, unsigned int* flops){
@@ -44,10 +43,16 @@ void pi_calc(double* pi, double tolerance, unsigned int* n, double* aproximate_a
     somatorio(&pi[0], tolerance, n, aproximate_absolut_error, ulps, flops);
     fesetround(FE_UPWARD);
     *aproximate_absolut_error = 0;
-    *n = 1;
+    *n = 0;
     somatorio(&pi[1], tolerance, n, aproximate_absolut_error, ulps, flops);
-    pi[0] *= 2;
-    pi[1] *= 2;
+}
+
+void print_hex(double* pi){
+
+    unsigned long long *ptr = (unsigned long long*) pi;
+
+    printf("%llx\n", *ptr); 
+
 }
 
 
@@ -63,12 +68,12 @@ Diferença de ULPs entre arredoamento p/baixo e p/cima
 Número de operações de ponto flutuante
 */
     double tolerance = 0;
-    unsigned int n = 1;
+    unsigned int n = 0; 
     double aproximate_absolut_error = 0;
     double exact_absolut_error = 0;
-    // double pi_down = 0;
-    // double pi_up = 0;
     double pi[2] = {0, 0};
+    unsigned long long *ptr_pi_down = NULL;
+    unsigned long long *ptr_pi_up = NULL;
     unsigned int ulps = 0;
     unsigned int flops = 0; 
 
@@ -85,14 +90,21 @@ Número de operações de ponto flutuante
     exact_absolut_error = abs(M_PI - pi[1]);
 
 
-    // printf("%.15e\n", tolerance);
-    printf("%u\n", n);
-    printf("%.15e\n", aproximate_absolut_error);
-    printf("%.15e\n", exact_absolut_error);
-    printf("%.15e\n", pi[0]); // pi_down
-    printf("%.15e\n", pi[1]); // pi_up
-    // printf("%u\n", ulps);
-    printf("%u\n", flops);
+    ptr_pi_down = (unsigned long long*) &pi[0];
+    ptr_pi_up = (unsigned long long*) &pi[1];
+    ulps = *ptr_pi_up - *ptr_pi_down;
+
+    printf("ITERAÇÕES: %u\n", n);
+    printf("APROXIMATE ABSOLUT ERROR: %.15e ", aproximate_absolut_error);
+    print_hex(&aproximate_absolut_error);
+    printf("EXACT ABSOLUT ERRO:       %.15e ", exact_absolut_error);
+    print_hex(&exact_absolut_error);
+    printf("Pi down : %.15e ", pi[0]); // pi_down
+    print_hex(&pi[0]);
+    printf("Pi up:    %.15e ", pi[1]); // pi_up
+    print_hex(&pi[1]);  
+    printf("ULPS: %u\n", ulps);
+    printf("FLOPS:    %u\n", flops);
 
 
 
