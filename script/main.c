@@ -27,6 +27,7 @@ double somatorio(double* pi, double tolerance, unsigned int* n, double* aproxima
     double exp = 1;
     double fact_up = 1; // Fatorial de cima da fração
     double fact_down = 1; // Fatorial de baixo da fração
+    double up_part = 0; // Parte de cima da fração
     
     // tentar fazer as variáveis já estarem todas alinhadas a partir da execução 1 (2)
 
@@ -37,7 +38,9 @@ double somatorio(double* pi, double tolerance, unsigned int* n, double* aproxima
             *pi = 2.0;
         }
         else{
-            *pi += 2.0 * ((exp * (exponentiation(fact_up, 2, flops))) / fact_down);
+            
+            up_part = (exp * (fact_up*fact_up));
+            *pi += 2.0 * (up_part / fact_down);
             *flops += 3;
         }
         *aproximate_absolut_error = fabs(*pi - last_value); // talvez conte como 1 operação de ponto flutuante
