@@ -15,8 +15,8 @@ double factorial(int n, unsigned int* flops){
 }
 
 double exponentiation(int base, int exponent, unsigned int* flops){
-    if(exponent == 0)
-        return 1;
+    if(exponent == 1)
+        return base;
     else{
         *flops += 1;
         return base * exponentiation(base, exponent - 1, flops);
@@ -24,15 +24,30 @@ double exponentiation(int base, int exponent, unsigned int* flops){
 }
 double somatorio(double* pi, double tolerance, unsigned int* n, double* aproximate_absolut_error, unsigned int* ulps, unsigned int* flops){
     double last_value = 0;
-// inicial erro absoluto
+    double exp = 1;
+    double fact_up = 1; // Fatorial de cima da fração
+    double fact_down = 1; // Fatorial de baixo da fração
+    
+    // tentar fazer as variáveis já estarem todas alinhadas a partir da execução 1 (2)
+
+    // inicial erro absoluto
     printf("ABS INICIAL: %.15e\n", *aproximate_absolut_error);
     do{
-        *pi += 2.0 * ((exponentiation(2, *n, flops) * exponentiation(factorial(*n, flops), 2, flops)) / factorial(2* *n + 1, flops));
-        *flops += 5;
-        *aproximate_absolut_error = fabs(*pi - last_value);
+        if(*n == 0){
+            *pi = 2.0;
+        }
+        else{
+            *pi += 2.0 * ((exp * (exponentiation(fact_up, 2, flops))) / fact_down);
+            *flops += 3;
+        }
+        *aproximate_absolut_error = fabs(*pi - last_value); // talvez conte como 1 operação de ponto flutuante
         *n += 1;
         last_value = *pi;
         printf("Iteração: %d, PI: %.15e, ABS: %.15e\n", *n, *pi, *aproximate_absolut_error);
+        exp *= 2;
+        fact_up = fact_up * (*n);
+        fact_down = fact_down * ((2 * *n + 1) * (2 * *n));
+        *flops += 3; // considerando abe
     }while(*aproximate_absolut_error >= tolerance);
     
 }
@@ -87,7 +102,7 @@ Número de operações de ponto flutuante
     tolerance = strtod(argv[1], NULL);
     printf("Tolerance: %.15e\n", tolerance);
     pi_calc(pi, tolerance, &n, &aproximate_absolut_error, &ulps, &flops);
-    exact_absolut_error = abs(M_PI - pi[1]);
+    exact_absolut_error = fabs(M_PI - pi[1]);
 
 
     ptr_pi_down = (unsigned long long*) &pi[0];
