@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <math.h>
 #include <fenv.h>
 
 
-double factorial(int n, unsigned int* flops){
+double factorial(int n, long long int* flops){
     if(n == 0)
         return 1;
     else{
@@ -14,7 +15,7 @@ double factorial(int n, unsigned int* flops){
     }
 }
 
-double exponentiation(int base, int exponent, unsigned int* flops){
+double exponentiation(int base, int exponent, long long int* flops){
     if(exponent == 1)
         return base;
     else{
@@ -22,7 +23,7 @@ double exponentiation(int base, int exponent, unsigned int* flops){
         return base * exponentiation(base, exponent - 1, flops);
     }
 }
-double somatorio(double* pi, double tolerance, unsigned int* n, double* aproximate_absolut_error, unsigned int* ulps, unsigned int* flops){
+double somatorio(double* pi, double tolerance, unsigned int* n, double* aproximate_absolut_error, unsigned int* ulps, long long int* flops){
     double last_value = 0;
     double exp = 1;
     double fact_up = 1; // Fatorial de cima da fração
@@ -55,7 +56,7 @@ double somatorio(double* pi, double tolerance, unsigned int* n, double* aproxima
     
 }
 
-void pi_calc(double* pi, double tolerance, unsigned int* n, double* aproximate_absolut_error, unsigned int* ulps, unsigned int* flops){
+void pi_calc(double* pi, double tolerance, unsigned int* n, double* aproximate_absolut_error, unsigned int* ulps, long long int* flops){
 
     fesetround(FE_DOWNWARD);
     somatorio(&pi[0], tolerance, n, aproximate_absolut_error, ulps, flops);
@@ -64,15 +65,6 @@ void pi_calc(double* pi, double tolerance, unsigned int* n, double* aproximate_a
     *n = 0;
     somatorio(&pi[1], tolerance, n, aproximate_absolut_error, ulps, flops);
 }
-
-void print_hex(double* pi){
-
-    long int *ptr = (long int*) pi;
-
-    printf("%llx\n", *ptr); 
-
-}
-
 
 int main(int argc, char *argv[]){
 /*
@@ -90,8 +82,10 @@ Número de operações de ponto flutuante
     double aproximate_absolut_error = 0;
     double exact_absolut_error = 0;
     double pi[2] = {0, 0};
-    long int *ptr_pi_down = NULL;
-    long int *ptr_pi_up = NULL;
+    int64_t *ptr_pi_down = NULL;
+    int64_t *ptr_pi_up = NULL;
+    int64_t *ptr_abe = NULL;
+    int64_t *ptr_ebe = NULL;
     
     int ulps = 0;
     long long int flops = 0; 
@@ -109,24 +103,23 @@ Número de operações de ponto flutuante
     exact_absolut_error = fabs(M_PI - pi[1]);
 
 
-    ptr_pi_down = (long int*) &pi[0];
-    ptr_pi_up = (long int*) &pi[1];
+    ptr_pi_down = (int64_t *) &pi[0];
+    ptr_pi_up = (int64_t *) &pi[1];
+    ptr_abe = (int64_t *) &aproximate_absolut_error;
+    ptr_ebe = (int64_t *) &exact_absolut_error;
     ulps = *ptr_pi_up - *ptr_pi_down;
 
     printf("%d\n", n);
-    printf("%.15e ", aproximate_absolut_error);
-    print_hex(&aproximate_absolut_error);
-    printf("%.15e ", exact_absolut_error);
-    print_hex(&exact_absolut_error);
-    printf("%.15e ", pi[0]); // pi_down
-    print_hex(&pi[0]);
-    printf("%.15e ", pi[1]); // pi_up
-    print_hex(&pi[1]);  
+    printf("%.15e %lx\n", aproximate_absolut_error, *ptr_abe);
+
+    printf("%.15e %lx\n", exact_absolut_error, *ptr_ebe);
+    
+    printf("%.15e %lx\n", pi[0], *ptr_pi_down); // pi_down
+
+    printf("%.15e %lx\n", pi[1], *ptr_pi_up); // pi_up
+
     printf("%d\n", ulps);
-    printf("%ll\n", flops);
-
-
-    printf("%.15e\n", M_PI);
+    printf("%lld\n", flops);
 
     return 0;
 }
